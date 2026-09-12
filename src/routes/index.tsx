@@ -1,24 +1,122 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Play } from "lucide-react";
+import { GENRES, searchAlbums, searchTracks, art, type Track } from "@/lib/music";
+import { AlbumCard } from "@/components/MediaCard";
+import { TrackList } from "@/components/TrackList";
+import { usePlayer } from "@/lib/player";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Wavely — Listen to Music Free Online" },
+      {
+        name: "description",
+        content:
+          "Discover trending songs, browse albums and play music instantly in your browser with Wavely.",
+      },
+      { property: "og:title", content: "Wavely — Listen to Music Free Online" },
+      {
+        property: "og:description",
+        content: "Discover trending songs, browse albums and play music instantly in your browser.",
+      },
+    ],
+  }),
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Row({ title, term }: { title: string; term: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["albums", term],
+    queryFn: () => searchAlbums(term, 10),
+    staleTime: 1000 * 60 * 30,
+  });
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <section className="mt-8">
+      <h2 className="mb-3 text-xl font-bold tracking-tight">{title}</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {isLoading
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-56 animate-pulse rounded-xl bg-surface" />
+            ))
+          : data?.slice(0, 10).map((a) => (
+              <AlbumCard
+                key={a.collectionId}
+                albumId={a.collectionId}
+                title={a.collectionName}
+                subtitle={a.artistName}
+                artwork={a.artworkUrl100}
+              />
+            ))}
+      </div>
+    </section>
+  );
+}
+
+function Home() {
+  const p = usePlayer();
+  const { data: trending } = useQuery({
+    queryKey: ["trending"],
+    queryFn: () => searchTracks("top hits 2026", 12),
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const hero: Track | undefined = trending?.[0];
+
+  return (
+    <div className="surface-gradient min-h-full px-4 pb-10 pt-6 md:px-8">
+      <header className="flex flex-col gap-6 md:flex-row md:items-end">
+        <div className="flex-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Featured today
+          </p>
+          <h1 className="mt-2 text-4xl font-extrabold tracking-tight md:text-5xl">
+            Good vibes, on repeat
+          </h1>
+          <p className="mt-3 max-w-lg text-sm text-muted-foreground">
+            Millions of tracks from the public Apple Music catalog. Search anything, build a queue,
+            and play instantly.
+          </p>
+          <div className="mt-5 flex gap-3">
+            <button
+              onClick={() => trending && p.playQueue(trending, 0)}
+              disabled={!trending}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-transform hover:scale-105 disabled:opacity-50"
+            >
+              <Play className="size-4 fill-current" /> Play trending
+            </button>
+            <Link
+              to="/search"
+              className="inline-flex items-center rounded-full border border-border px-6 py-3 text-sm font-semibold transition-colors hover:bg-accent"
+            >
+              Search music
+            </Link>
+          </div>
+        </div>
+        {hero && (
+          <img
+            src={art(hero.artworkUrl100, 600)}
+            alt={`${hero.collectionName} cover art`}
+            className="w-48 rounded-2xl shadow-glow md:w-60"
+          />
+        )}
+      </header>
+
+      <section className="mt-10">
+        <h2 className="mb-3 text-xl font-bold tracking-tight">Trending now</h2>
+        <div className="rounded-xl bg-surface/70 p-2">
+          {trending ? (
+            <TrackList tracks={trending} />
+          ) : (
+            <div className="h-64 animate-pulse rounded-lg bg-surface" />
+          )}
+        </div>
+      </section>
+
+      {GENRES.slice(0, 5).map((g) => (
+        <Row key={g.term} title={g.label} term={g.term} />
+      ))}
     </div>
   );
 }
