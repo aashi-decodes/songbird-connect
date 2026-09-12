@@ -11,6 +11,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { PlayerProvider } from "../lib/player";
+import { Sidebar, MobileNav } from "../components/Sidebar";
+import { PlayerBar } from "../components/PlayerBar";
 
 function NotFoundComponent() {
   return (
@@ -77,19 +80,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Wavely — Music Streaming Web Player" },
+      {
+        name: "description",
+        content: "Stream and discover millions of songs with Wavely's free web music player.",
+      },
+      { property: "og:title", content: "Wavely — Music Streaming Web Player" },
+      {
+        property: "og:description",
+        content: "Stream and discover millions of songs with Wavely's free web music player.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -119,8 +129,19 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PlayerProvider>
+        <div className="flex h-screen flex-col bg-background">
+          <div className="flex min-h-0 flex-1 gap-2 p-2">
+            <Sidebar />
+            <main className="scroll-slim min-h-0 flex-1 overflow-y-auto rounded-xl bg-surface/40">
+              {/* Required: nested routes render here. */}
+              <Outlet />
+            </main>
+          </div>
+          <PlayerBar />
+          <MobileNav />
+        </div>
+      </PlayerProvider>
     </QueryClientProvider>
   );
 }
