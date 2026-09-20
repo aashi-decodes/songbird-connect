@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PlayerProvider } from "../lib/player";
 import { Sidebar, MobileNav } from "../components/Sidebar";
 import { PlayerBar } from "../components/PlayerBar";
+import { IntroExperience } from "../components/IntroExperience";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <PlayerProvider>
+        <IntroExperience />
         <div className="flex h-screen flex-col bg-background">
           <div className="flex min-h-0 flex-1 gap-2 p-2">
             <Sidebar />

@@ -1,10 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GENRES, searchAlbums, searchTracks } from "@/lib/music";
 import { TrackList } from "@/components/TrackList";
 import { AlbumCard } from "@/components/MediaCard";
+import { MOODS, interpretMood, moodIntent, type Mood } from "@/lib/mood";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
@@ -27,21 +29,25 @@ export const Route = createFileRoute("/search")({
 function SearchPage() {
   const [input, setInput] = useState("");
   const [term, setTerm] = useState("");
+  const [literal, setLiteral] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => setTerm(input.trim()), 400);
     return () => clearTimeout(id);
   }, [input]);
 
+  const intent = literal ? null : interpretMood(term);
+  const catalogTerm = intent?.catalogTerm ?? term;
+
   const tracks = useQuery({
-    queryKey: ["search-tracks", term],
-    queryFn: () => searchTracks(term, 30),
-    enabled: term.length > 0,
+    queryKey: ["search-tracks", catalogTerm],
+    queryFn: () => searchTracks(catalogTerm, 30),
+    enabled: catalogTerm.length > 0,
   });
   const albums = useQuery({
-    queryKey: ["search-albums", term],
-    queryFn: () => searchAlbums(term, 10),
-    enabled: term.length > 0,
+    queryKey: ["search-albums", catalogTerm],
+    queryFn: () => searchAlbums(catalogTerm, 10),
+    enabled: catalogTerm.length > 0,
   });
 
   return (
@@ -52,12 +58,27 @@ function SearchPage() {
         <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Songs, artists or albums"
+          onChange={(e) => { setInput(e.target.value); setLiteral(false); }}
+          placeholder="What are you feeling today?"
           aria-label="Search music"
           className="w-full rounded-full bg-surface-elevated py-3 pl-11 pr-4 text-sm outline-none ring-primary/60 placeholder:text-muted-foreground focus:ring-2"
         />
       </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {MOODS.map((mood) => (
+          <Button key={mood} size="sm" variant={intent?.mood === mood ? "default" : "outline"} onClick={() => { const next = moodIntent(mood); setInput(`I'm feeling ${mood.toLowerCase()}`); setTerm(`I'm feeling ${mood.toLowerCase()}`); setLiteral(false); }}>
+            {mood}
+          </Button>
+        ))}
+      </div>
+
+      {term && intent && (
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-l-2 border-primary pl-4 text-sm">
+          <span>Finding <strong>{intent.mood.toLowerCase()}</strong> music for you.</span>
+          <button onClick={() => setLiteral(true)} className="text-muted-foreground underline underline-offset-4 hover:text-foreground">Search “{term}” literally</button>
+        </div>
+      )}
 
       {!term && (
         <section className="mt-8">
@@ -106,6 +127,11 @@ function SearchPage() {
                 ))}
               </div>
             </section>
+          )}
+          {intent && (
+            <Link to="/studio" search={{ mood: intent.mood, style: intent.style as "Pop" | "Electronic" | "Lo-fi" | "R&B" | "Ambient" | "Retro" }} className="mt-8 inline-flex text-sm font-semibold text-primary hover:underline">
+              Can’t find exactly what you’re feeling? Create your own sound →
+            </Link>
           )}
         </>
       )}
