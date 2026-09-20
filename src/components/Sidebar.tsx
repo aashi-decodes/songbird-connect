@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Search, Library, AudioLines, Heart } from "lucide-react";
+import { Home, Search, Library, AudioLines, Heart, SlidersHorizontal } from "lucide-react";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/search", label: "Search", icon: Search },
   { to: "/library", label: "Your Library", icon: Library },
+  { to: "/studio", label: "Studio", icon: SlidersHorizontal },
 ] as const;
 
 export function Sidebar() {
@@ -59,7 +60,7 @@ export function MobileNav() {
           key={to}
           to={to}
           activeOptions={{ exact: to === "/" }}
-          className="flex flex-col items-center gap-1 px-4 text-[11px] font-medium text-muted-foreground"
+          className="flex min-w-0 flex-col items-center gap-1 px-2 text-[10px] font-medium text-muted-foreground"
           activeProps={{ className: "text-primary" }}
         >
           <Icon className="size-5" />

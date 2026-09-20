@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Play } from "lucide-react";
+import { Play, SlidersHorizontal } from "lucide-react";
 import { GENRES, searchAlbums, searchTracks, art, type Track } from "@/lib/music";
 import { AlbumCard } from "@/components/MediaCard";
 import { TrackList } from "@/components/TrackList";
@@ -112,6 +112,17 @@ function Home() {
             <div className="h-64 animate-pulse rounded-lg bg-surface" />
           )}
         </div>
+      </section>
+
+      <section className="mt-8 flex flex-col items-start justify-between gap-4 border-y border-border py-6 sm:flex-row sm:items-center">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Wavely Studio</p>
+          <h2 className="mt-1 text-xl font-bold">Create your own sound</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Build a beat from your mood with an easy 16-step studio.</p>
+        </div>
+        <Link to="/studio" search={{}} className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/20">
+          <SlidersHorizontal className="size-4" /> Open Studio
+        </Link>
       </section>
 
       {GENRES.slice(0, 5).map((g) => (

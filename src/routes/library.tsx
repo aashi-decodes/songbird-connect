@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, Play } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, Play, Pencil, Trash2, Disc3 } from "lucide-react";
 import { getTracksByIds } from "@/lib/music";
 import { TrackList } from "@/components/TrackList";
 import { usePlayer } from "@/lib/player";
+import { Button } from "@/components/ui/button";
+import { readCreations, writeCreations, type SavedBeat } from "@/lib/studio";
 
 export const Route = createFileRoute("/library")({
   head: () => ({
@@ -32,6 +35,26 @@ function LibraryPage() {
   });
 
   const tracks = data ?? [];
+  const [creations, setCreations] = useState<SavedBeat[]>([]);
+
+  useEffect(() => {
+    const refresh = () => setCreations(readCreations());
+    refresh();
+    window.addEventListener("wavely-creations-change", refresh);
+    return () => window.removeEventListener("wavely-creations-change", refresh);
+  }, []);
+
+  const rename = (beat: SavedBeat) => {
+    const nextName = window.prompt("Rename your beat", beat.name)?.trim();
+    if (!nextName) return;
+    const next = creations.map((item) => item.id === beat.id ? { ...item, name: nextName } : item);
+    writeCreations(next); setCreations(next);
+  };
+
+  const remove = (id: string) => {
+    const next = creations.filter((item) => item.id !== id);
+    writeCreations(next); setCreations(next);
+  };
 
   return (
     <div className="min-h-full px-4 pb-10 pt-6 md:px-8">
@@ -80,6 +103,30 @@ function LibraryPage() {
           </div>
         )}
       </div>
+
+      <section className="mt-10 border-t border-border pt-8">
+        <div className="flex items-end justify-between gap-4">
+          <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Wavely Studio</p><h2 className="mt-1 text-2xl font-bold">Your Creations</h2></div>
+          <Button asChild size="sm"><Link to="/studio" search={{}}>New beat</Link></Button>
+        </div>
+        {creations.length === 0 ? (
+          <p className="mt-5 text-sm text-muted-foreground">Your saved beats will appear here.</p>
+        ) : (
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {creations.map((beat) => (
+              <article key={beat.id} className="rounded-lg border border-border bg-surface p-4">
+                <div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary/15"><Disc3 className="text-primary" /></span><div className="min-w-0"><h3 className="truncate font-semibold">{beat.name}</h3><p className="text-xs text-muted-foreground">{beat.mood} · {beat.style} · {beat.bpm} BPM</p></div></div>
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  <Button asChild size="sm"><Link to="/studio" search={{ edit: beat.id }}> <Play /> Play</Link></Button>
+                  <Button asChild size="sm" variant="outline"><Link to="/studio" search={{ edit: beat.id }}>Edit</Link></Button>
+                  <Button size="icon" variant="ghost" aria-label={`Rename ${beat.name}`} title="Rename" onClick={() => rename(beat)}><Pencil /></Button>
+                  <Button size="icon" variant="ghost" aria-label={`Delete ${beat.name}`} title="Delete" onClick={() => remove(beat.id)}><Trash2 /></Button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
