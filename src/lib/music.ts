@@ -25,11 +25,10 @@ export type Album = {
 
 const BASE = "https://itunes.apple.com";
 
-async function jsonp<T>(url: string): Promise<T> {
+async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error("Music catalog request failed");
-  const text = await res.text();
-  return JSON.parse(text) as T;
+  return (await res.json()) as T;
 }
 
 export function art(url: string | undefined, size = 400) {
@@ -46,7 +45,7 @@ export function formatTime(seconds: number) {
 
 export async function searchTracks(term: string, limit = 30): Promise<Track[]> {
   if (!term.trim()) return [];
-  const data = await jsonp<{ results: Track[] }>(
+  const data = await request<{ results: Track[] }>(
     `${BASE}/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=${limit}`,
   );
   return data.results.filter((t) => t.previewUrl);
@@ -54,7 +53,7 @@ export async function searchTracks(term: string, limit = 30): Promise<Track[]> {
 
 export async function searchAlbums(term: string, limit = 20): Promise<Album[]> {
   if (!term.trim()) return [];
-  const data = await jsonp<{ results: Album[] }>(
+  const data = await request<{ results: Album[] }>(
     `${BASE}/search?term=${encodeURIComponent(term)}&media=music&entity=album&limit=${limit}`,
   );
   return data.results;
@@ -63,7 +62,7 @@ export async function searchAlbums(term: string, limit = 20): Promise<Album[]> {
 export async function getAlbum(
   collectionId: number,
 ): Promise<{ album: Album | null; tracks: Track[] }> {
-  const data = await jsonp<{ results: Array<Album & Track & { wrapperType: string }> }>(
+  const data = await request<{ results: Array<Album & Track & { wrapperType: string }> }>(
     `${BASE}/lookup?id=${collectionId}&entity=song&limit=200`,
   );
   const album = (data.results.find((r) => r.wrapperType === "collection") as Album) ?? null;
@@ -75,7 +74,7 @@ export async function getAlbum(
 
 export async function getTracksByIds(ids: number[]): Promise<Track[]> {
   if (ids.length === 0) return [];
-  const data = await jsonp<{ results: Track[] }>(
+  const data = await request<{ results: Track[] }>(
     `${BASE}/lookup?id=${ids.join(",")}&entity=song`,
   );
   const map = new Map(data.results.filter((t) => t.previewUrl).map((t) => [t.trackId, t]));
@@ -84,10 +83,14 @@ export async function getTracksByIds(ids: number[]): Promise<Track[]> {
 
 export const GENRES = [
   { label: "Pop Hits", term: "pop hits" },
-  { label: "Hip-Hop", term: "hip hop" },
   { label: "Bollywood", term: "bollywood" },
+  { label: "Hip-Hop", term: "hip hop" },
   { label: "Rock Classics", term: "rock classics" },
   { label: "Chill Lo-Fi", term: "lofi chill" },
+  { label: "Focus & Study", term: "focus study" },
+  { label: "Romantic", term: "romantic" },
+  { label: "Workout & Energetic", term: "workout energetic" },
+  { label: "Nostalgic", term: "nostalgic hits" },
   { label: "Jazz", term: "jazz" },
   { label: "EDM", term: "electronic dance" },
   { label: "Indie", term: "indie" },
