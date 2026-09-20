@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as UniverseRouteImport } from './routes/universe'
 import { Route as AlbumAlbumIdRouteImport } from './routes/album.$albumId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const StudioRoute = StudioRouteImport.update({
   path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UniverseRoute = UniverseRouteImport.update({
+  id: '/universe',
+  path: '/universe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlbumAlbumIdRoute = AlbumAlbumIdRouteImport.update({
   id: '/album/$albumId',
   path: '/album/$albumId',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/search': typeof SearchRoute
   '/studio': typeof StudioRoute
+  '/universe': typeof UniverseRoute
   '/album/$albumId': typeof AlbumAlbumIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/search': typeof SearchRoute
   '/studio': typeof StudioRoute
+  '/universe': typeof UniverseRoute
   '/album/$albumId': typeof AlbumAlbumIdRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,23 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/search': typeof SearchRoute
   '/studio': typeof StudioRoute
+  '/universe': typeof UniverseRoute
   '/album/$albumId': typeof AlbumAlbumIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/library' | '/search' | '/studio' | '/album/$albumId'
+  fullPaths:
+    '/' | '/library' | '/search' | '/studio' | '/universe' | '/album/$albumId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/library' | '/search' | '/studio' | '/album/$albumId'
-  id: '__root__' | '/' | '/library' | '/search' | '/studio' | '/album/$albumId'
+  to: '/' | '/library' | '/search' | '/studio' | '/universe' | '/album/$albumId'
+  id:
+    | '__root__'
+    | '/'
+    | '/library'
+    | '/search'
+    | '/studio'
+    | '/universe'
+    | '/album/$albumId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +93,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   SearchRoute: typeof SearchRoute
   StudioRoute: typeof StudioRoute
+  UniverseRoute: typeof UniverseRoute
   AlbumAlbumIdRoute: typeof AlbumAlbumIdRoute
 }
 
@@ -109,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/universe': {
+      id: '/universe'
+      path: '/universe'
+      fullPath: '/universe'
+      preLoaderRoute: typeof UniverseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/album/$albumId': {
       id: '/album/$albumId'
       path: '/album/$albumId'
@@ -124,6 +149,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   SearchRoute: SearchRoute,
   StudioRoute: StudioRoute,
+  UniverseRoute: UniverseRoute,
   AlbumAlbumIdRoute: AlbumAlbumIdRoute,
 }
 export const routeTree = rootRouteImport

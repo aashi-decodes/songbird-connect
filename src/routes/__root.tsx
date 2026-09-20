@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -15,6 +16,7 @@ import { PlayerProvider } from "../lib/player";
 import { Sidebar, MobileNav } from "../components/Sidebar";
 import { PlayerBar } from "../components/PlayerBar";
 import { IntroExperience } from "../components/IntroExperience";
+import { cn } from "../lib/utils";
 
 function NotFoundComponent() {
   return (
@@ -127,21 +129,31 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Song Universe is an immersive, full-bleed experience: hide the sidebar and
+  // mobile nav chrome there while keeping the player bar available everywhere.
+  const isImmersive = useRouterState({
+    select: (state) => state.location.pathname.startsWith("/universe"),
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
       <PlayerProvider>
         <IntroExperience />
         <div className="flex h-screen flex-col bg-background">
-          <div className="flex min-h-0 flex-1 gap-2 p-2">
-            <Sidebar />
-            <main className="scroll-slim min-h-0 flex-1 overflow-y-auto rounded-xl bg-surface/40">
+          <div className={cn("flex min-h-0 flex-1", !isImmersive && "gap-2 p-2")}>
+            {!isImmersive && <Sidebar />}
+            <main
+              className={cn(
+                "min-h-0 flex-1 overflow-y-auto",
+                isImmersive ? "overflow-hidden" : "scroll-slim rounded-xl bg-surface/40",
+              )}
+            >
               {/* Required: nested routes render here. */}
               <Outlet />
             </main>
           </div>
           <PlayerBar />
-          <MobileNav />
+          {!isImmersive && <MobileNav />}
         </div>
       </PlayerProvider>
     </QueryClientProvider>

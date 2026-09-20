@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Play, SlidersHorizontal } from "lucide-react";
+import { Play, SlidersHorizontal, Orbit } from "lucide-react";
 import { GENRES, searchAlbums, searchTracks, art, type Track } from "@/lib/music";
 import { AlbumCard } from "@/components/MediaCard";
 import { TrackList } from "@/components/TrackList";
@@ -111,6 +111,26 @@ function Home() {
           ) : (
             <div className="h-64 animate-pulse rounded-lg bg-surface" />
           )}
+        </div>
+      </section>
+
+      <section className="universe-teaser relative mt-10 overflow-hidden rounded-2xl border border-primary/20 px-5 py-8 sm:px-8">
+        <div className="universe-teaser-stars" aria-hidden="true">
+          {Array.from({ length: 14 }, (_, i) => (
+            <span key={i} style={{ top: `${(i * 37) % 90}%`, left: `${(i * 61) % 95}%` }} />
+          ))}
+        </div>
+        <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">New</p>
+            <h2 className="mt-1 text-2xl font-extrabold tracking-tight">Explore Song Universe 🪐</h2>
+            <p className="mt-2 max-w-lg text-sm text-muted-foreground">
+              Travel through a living galaxy built from the real catalog — every song a planet, every artist a star. Jump from track to track and see where the connections take you.
+            </p>
+          </div>
+          <Link to="/universe" className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-transform hover:scale-105">
+            <Orbit className="size-4" /> Enter the Universe
+          </Link>
         </div>
       </section>
 

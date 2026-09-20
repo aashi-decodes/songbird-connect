@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Search, Library, AudioLines, Heart, SlidersHorizontal } from "lucide-react";
+import { Home, Search, Library, AudioLines, Heart, SlidersHorizontal, Orbit } from "lucide-react";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/search", label: "Search", icon: Search },
   { to: "/library", label: "Your Library", icon: Library },
   { to: "/studio", label: "Studio", icon: SlidersHorizontal },
+  { to: "/universe", label: "Song Universe", icon: Orbit },
 ] as const;
 
 export function Sidebar() {

@@ -55,6 +55,7 @@ export function IntroExperience() {
           Enter Wavely <ArrowRight />
         </Button>
       </div>
+      <p className="intro-credit">Made with love AASHI GOEL</p>
     </div>
   );
 }
