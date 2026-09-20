@@ -18,33 +18,45 @@ const MAX_ARTISTS = 6;
 function dedupeTracks(tracks: Track[], excludeId: number): Track[] {
   const seen = new Set<number>([excludeId]);
   const result: Track[] = [];
+
   for (const track of tracks) {
     if (!track.previewUrl || seen.has(track.trackId)) continue;
     seen.add(track.trackId);
     result.push(track);
   }
+
   return result;
 }
 
 export async function buildUniverse(center: Track): Promise<UniverseData> {
-  const terms = [center.artistName, center.primaryGenreName].filter(
-    (term): term is string => Boolean(term?.trim()),
+  const searches: Promise<Track[]>[] = [
+    searchTracks(center.artistName, 12),
+  ];
+
+  if (center.primaryGenreName) {
+    searches.push(searchTracks(center.primaryGenreName, 12));
+  }
+
+  const results = await Promise.allSettled(searches);
+
+  const successfulResults = results
+    .filter(
+      (result): result is PromiseFulfilledResult<Track[]> =>
+        result.status === "fulfilled",
+    )
+    .flatMap((result) => result.value);
+
+  const tracks = dedupeTracks(successfulResults, center.trackId).slice(
+    0,
+    MAX_TRACKS,
   );
 
-  const settled = await Promise.allSettled(
-    terms.map((term) => searchTracks(term, 15)),
-  );
-
-  const merged = dedupeTracks(
-    settled.flatMap((result) => (result.status === "fulfilled" ? result.value : [])),
-    center.trackId,
-  );
-
-  const tracks = merged.slice(0, MAX_TRACKS);
   const artistMap = new Map<number, ArtistNode>();
 
   for (const track of tracks) {
-    if (track.artistId === center.artistId || artistMap.has(track.artistId)) continue;
+    if (track.artistId === center.artistId) continue;
+    if (artistMap.has(track.artistId)) continue;
+
     artistMap.set(track.artistId, {
       artistId: track.artistId,
       artistName: track.artistName,
@@ -60,19 +72,22 @@ export async function buildUniverse(center: Track): Promise<UniverseData> {
 }
 
 export async function getFallbackCenter(): Promise<Track | null> {
-  const fallbackTerms = [
+  const searches = [
     "top hits 2026",
+    "popular music",
     "pop hits",
     "bollywood hits",
-    "popular music",
   ];
 
-  for (const term of fallbackTerms) {
+  for (const query of searches) {
     try {
-      const results = await searchTracks(term, 20);
-      if (results.length > 0) return results[0];
+      const results = await searchTracks(query, 10);
+
+      if (results.length > 0) {
+        return results[0];
+      }
     } catch {
-      // Try the next fallback query.
+      // Try the next search instead of getting stuck.
     }
   }
 
