@@ -15,17 +15,36 @@ export type UniverseData = {
 const MAX_TRACKS = 10;
 const MAX_ARTISTS = 6;
 
+const MAX_PER_ARTIST = 3;
+
 function dedupeTracks(tracks: Track[], excludeId: number): Track[] {
   const seen = new Set<number>([excludeId]);
+  const perArtist = new Map<number, number>();
   const result: Track[] = [];
 
   for (const track of tracks) {
     if (!track.previewUrl || seen.has(track.trackId)) continue;
+    const count = perArtist.get(track.artistId) ?? 0;
+    if (count >= MAX_PER_ARTIST) continue;
+    perArtist.set(track.artistId, count + 1);
     seen.add(track.trackId);
     result.push(track);
   }
 
   return result;
+}
+
+// Interleave result sets so one search can't dominate the universe.
+function interleave(sets: Track[][]): Track[] {
+  const out: Track[] = [];
+  const longest = Math.max(0, ...sets.map((s) => s.length));
+  for (let i = 0; i < longest; i++) {
+    for (const set of sets) {
+      const item = set[i];
+      if (item) out.push(item);
+    }
+  }
+  return out;
 }
 
 export async function buildUniverse(center: Track): Promise<UniverseData> {
