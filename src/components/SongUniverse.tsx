@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { Link } from "@tanstack/react-router";
@@ -49,6 +49,13 @@ export function SongUniverse({ initialTrack }: { initialTrack: Track | null }) {
   const [center, setCenter] = useState<Track | null>(initialTrack);
   const [selected, setSelected] = useState<Track | null>(initialTrack);
   const [history, setHistory] = useState<Track[]>([]);
+
+  // The starting track can arrive after mount (fallback lookup); adopt it then.
+  useEffect(() => {
+    if (!initialTrack) return;
+    setCenter((c) => c ?? initialTrack);
+    setSelected((s) => s ?? initialTrack);
+  }, [initialTrack]);
 
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["universe", center?.trackId],
