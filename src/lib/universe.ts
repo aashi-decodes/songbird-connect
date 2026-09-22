@@ -54,6 +54,7 @@ export async function buildUniverse(center: Track): Promise<UniverseData> {
 
   if (center.primaryGenreName) {
     searches.push(searchTracks(center.primaryGenreName, 12));
+    searches.push(searchTracks(`${center.primaryGenreName} hits`, 12));
   }
 
   const results = await Promise.allSettled(searches);
@@ -93,12 +94,7 @@ export async function buildUniverse(center: Track): Promise<UniverseData> {
 }
 
 export async function getFallbackCenter(): Promise<Track | null> {
-  const searches = [
-    "top hits 2026",
-    "popular music",
-    "pop hits",
-    "bollywood hits",
-  ];
+  const searches = ["Coldplay", "Dua Lipa", "Arijit Singh", "pop hits"];
 
   for (const query of searches) {
     try {
