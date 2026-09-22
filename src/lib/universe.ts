@@ -84,7 +84,7 @@ export async function getFallbackCenter(): Promise<Track | null> {
       const results = await searchTracks(query, 10);
 
       if (results.length > 0) {
-        return results[0];
+        return results[0] ?? null;
       }
     } catch {
       // Try the next search instead of getting stuck.
