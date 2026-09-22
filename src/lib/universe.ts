@@ -58,12 +58,14 @@ export async function buildUniverse(center: Track): Promise<UniverseData> {
 
   const results = await Promise.allSettled(searches);
 
-  const successfulResults = results
-    .filter(
-      (result): result is PromiseFulfilledResult<Track[]> =>
-        result.status === "fulfilled",
-    )
-    .flatMap((result) => result.value);
+  const successfulResults = interleave(
+    results
+      .filter(
+        (result): result is PromiseFulfilledResult<Track[]> =>
+          result.status === "fulfilled",
+      )
+      .map((result) => result.value),
+  );
 
   const tracks = dedupeTracks(successfulResults, center.trackId).slice(
     0,
